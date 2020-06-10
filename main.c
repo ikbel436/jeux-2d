@@ -1,196 +1,55 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <SDL/SDL.h>
-#include <stdlib.h>
-#include "SDL/SDL_image.h"
-#include "SDL/SDL_mixer.h"
-#include "fonction.h"
-
-void pause()
+#include <SDL/SDL_image.h>
+#include <SDL/SDL_mixer.h>
+#include "quiz.h"
+#include <SDL/SDL_ttf.h>
+#include <time.h>
+void enigme ()
 {
-    int continuer = 1;
-    SDL_Event event;
- 
-    while (continuer)
+
+
+    int d;
+
+    srand(time(NULL));
+    d=rand()%3+1;
+    printf("random : %d",d);
+    TTF_Init();
+    if(TTF_Init()==-1)
     {
-        SDL_WaitEvent(&event);
-        switch(event.type)
-        {
-            case SDL_QUIT:
-                continuer = 0;
-        }
+        fprintf(stderr,"ERREUR INIT: %s \n",TTF_GetError());
+        exit(EXIT_FAILURE);
     }
+    SDL_Color couleurnoir= {0,0,0};
+    SDL_Surface *texte = NULL, *backg=NULL ; //declaration des variables globale
+    SDL_Rect positiontexte,positiond;
+    positiontexte.x=380;
+    positiontexte.y=280;
+    TTF_Font *police;//(pointeur contient parametre de la police)
+    SDL_Init(SDL_INIT_VIDEO); // Initialisation de la SDL
+    SDL_Surface *ecran =NULL;
+    police=TTF_OpenFont("font.ttf",200);
+    ecran=SDL_SetVideoMode(1920,1080, 32,SDL_ANYFORMAT); // Ouverture de la fenêtre
+    backg = IMG_Load("quiz.png");
+    positiond.x=0 ;
+    positiond.y=0 ;
+    SDL_BlitSurface(backg,NULL, ecran, &positiond);
+    SDL_Flip(ecran);
+    texte=TTF_RenderText_Blended(police,"ENIGMA",couleurnoir);
+    SDL_BlitSurface(texte,NULL,ecran,&positiontexte);
+    SDL_Flip(ecran);
+    SDL_Delay(2000);
+
+    SDL_BlitSurface(backg,NULL, ecran, &positiond);
+    SDL_Flip(ecran);
+    quiz(ecran,d);
+
+    reponse(ecran,d);
+    SDL_FreeSurface(backg);
+    TTF_CloseFont(police);
+    TTF_Quit();
+    SDL_Quit(); // Arrêt de la SL
+
+    return EXIT_SUCCESS; // Fermeture du programme
 }
-
-int main (void)
-{
-SDL_Surface *screen =NULL;
-SDL_Init(SDL_INIT_VIDEO);
-SDL_EnableKeyRepeat(10,40);
-int continuer=1;
-screen = SDL_SetVideoMode(1500,480,32,SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_RESIZABLE);
-SDL_Surface *fond=NULL/*,*image=NULL*/,*vies=NULL,*score=NULL;
-SDL_Rect positionfond;
-SDL_Rect posvies;
-SDL_Rect posscore;
-//SDL_Rect positionimage;
-SDL_Rect animepos[8];
-SDL_Event event;
-int frame=4;
-Hero hero;
-initializeHero(&hero);
-
-
-
-
-animepos[0].x=0;
-animepos[0].y=0;
-animepos[0].w=128;
-animepos[0].h=180;
-
-animepos[1].x=128;
-animepos[1].y=0;
-animepos[1].w=109;
-animepos[1].h=180;
-
-animepos[2].x=237;
-animepos[2].y=0;
-animepos[2].w=167;
-animepos[2].h=180;
-
-animepos[3].x=404;
-animepos[3].y=0;
-animepos[3].w=130;
-animepos[3].h=180;
-
-animepos[4].x=534;
-animepos[4].y=0;
-animepos[4].w=127;
-animepos[4].h=180;
-
-animepos[5].x=661;
-animepos[5].y=0;
-animepos[5].w=109;
-animepos[5].h=180;
-
-animepos[6].x=770;
-animepos[6].y=0; 
-animepos[6].w=167;
-animepos[6].h=180;
-
-animepos[7].x=937;
-animepos[7].y=0;
-animepos[7].w=129;
-animepos[7].h=180;
-
-
-
-positionfond.x=0;
-positionfond.y=0;
-fond= IMG_Load("background.png");
-
-//positionimage.x=0;
-//positionimage.y=265;
-
-vies=IMG_Load("vies.png");
-score=IMG_Load("score.png");
-posvies.x=0;
-posvies.y=0;
-
-posscore.x=1250;
-posscore.y=0;
-
-/*SDL_BlitSurface(fond,NULL,screen, &positionfond);
-SDL_Flip(screen);
-SDL_BlitSurface(vies,NULL,screen, &posvies);
-SDL_BlitSurface(score,NULL,screen, &score);
-SDL_BlitSurface(hero.image,&animepos[frame],screen,&hero.positionimage);
-
-SDL_Flip(screen);*/
-
-
-
-int test=0,sourispos;
-
-while (continuer == 1)
-    {
-
-
-depsouris(sourispos,&test,animepos,&frame,&hero.positionimage);
-
-        SDL_PollEvent(&event);
-        switch(event.type)
-        {
-
-
-
-            case SDL_QUIT:
-                continuer = 0;
-
-SDL_Quit();
-                break;
-        case SDL_MOUSEBUTTONUP:
-sourispos=event.button.x;
-if (hero.positionimage.x<event.button.x)
-{test=1;
-}
-else
-{
-test=2;
-}
-
-
-                        break;
-            case SDL_KEYDOWN:
-                switch(event.key.keysym.sym)
-                {   
-
-
-		    case SDLK_ESCAPE:
-			continuer=0;
-			break; 
-		    case SDLK_UP: 
-
- break;
-                   
-                    case SDLK_RIGHT:
-
-
-
-
-
-                             animed(animepos,&frame);
-
-hero.positionimage.x+=20;
-
-
-		    break;
-
-                    case SDLK_LEFT: 
-
- 
-animeg(animepos,&frame);
-			
-
-hero.positionimage.x-=20;
-
-
-                        break;
-     
-                }
-               
-
-                
-}
- 
-SDL_BlitSurface(fond,NULL,screen, &positionfond);
-SDL_BlitSurface(vies,NULL,screen, &posvies);
-SDL_BlitSurface(score,NULL,screen, &posscore);
-
-SDL_BlitSurface(hero.image,&animepos[frame],screen,&hero.positionimage);
-
-SDL_Flip(screen);
-
-}
-
-}
-
