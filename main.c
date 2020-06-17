@@ -1,55 +1,97 @@
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
-#include <SDL/SDL_mixer.h>
-#include "quiz.h"
 #include <SDL/SDL_ttf.h>
-#include <time.h>
-void enigme ()
+#include "IA.h"
+
+
+#define width 1360 
+#define height 760
+
+int main()
 {
+  SDL_Surface *screen=NULL ;
+  int running=1,collision,i,temp_prec,temp_actu,test ;
+  float D ;
+  SDL_TimerID timer ;
+
+  Objet perso,zombie ;
+
+   SDL_Init(SDL_INIT_VIDEO);
+
+    screen = SDL_SetVideoMode(width, height, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
+    
+    intialiser(&perso ,&zombie) ;
+    setup (screen,&perso,&zombie) ;
+    
+    SDL_EnableKeyRepeat(10, 10);
+
+    while(running){
+     deplacement_objet(&perso,&running) ;
+     calculer_centre_rayon (&perso,&zombie) ;
+     D=calculer_distance (&perso,&zombie) ;
+     collision=verif_collision (&perso,&zombie,D ) ;
+     if(collision)
+     {
+       
+
+         temp_prec=SDL_GetTicks();
+
+         if(temp_prec-temp_actu>1000)
+         {
+           
+         do{
+
+           temp_actu=SDL_GetTicks() ;
+           
+           if(perso.pos.x>zombie.pos.x)
+           zombie.pos.x+=1 ;
+           if(perso.pos.x<zombie.pos.x)
+           zombie.pos.x-=1 ;
+            deplacement_objet(&perso,&running) ;
+            SDL_FillRect(screen,NULL,SDL_MapRGB(screen->format,255,255,255)) ;
+            SDL_BlitSurface(perso.img,NULL,screen,&(perso.pos)) ;
+            SDL_BlitSurface(zombie.img,NULL,screen,&(zombie.pos)) ;
+            SDL_Flip(screen);
+        
+         }while(zombie.pos.x!=perso.pos.x && (temp_actu-temp_prec<2000)) ;
+          
+       deplacement_objet(&perso,&running) ;
+       SDL_FillRect(screen,NULL,SDL_MapRGB(screen->format,255,255,255)) ;
+       SDL_BlitSurface(perso.img,NULL,screen,&(perso.pos)) ;
+       SDL_BlitSurface(zombie.img,NULL,screen,&(zombie.pos)) ;
+       SDL_Flip(screen);
+         }
+       deplacement_objet(&perso,&running) ;
+       SDL_FillRect(screen,NULL,SDL_MapRGB(screen->format,255,255,255)) ;
+       SDL_BlitSurface(perso.img,NULL,screen,&(perso.pos)) ;
+       SDL_BlitSurface(zombie.img,NULL,screen,&(zombie.pos)) ;
+       SDL_Flip(screen);
+       
 
 
-    int d;
+     }
+     else
+     {
+       deplacement_objet(&perso,&running) ;
+       SDL_FillRect(screen,NULL,SDL_MapRGB(screen->format,255,255,255)) ;
+       SDL_BlitSurface(perso.img,NULL,screen,&(perso.pos)) ;
+       SDL_BlitSurface(zombie.img,NULL,screen,&(zombie.pos)) ;
+       SDL_Flip(screen);
+     }
+     
 
-    srand(time(NULL));
-    d=rand()%3+1;
-    printf("random : %d",d);
-    TTF_Init();
-    if(TTF_Init()==-1)
-    {
-        fprintf(stderr,"ERREUR INIT: %s \n",TTF_GetError());
-        exit(EXIT_FAILURE);
+
     }
-    SDL_Color couleurnoir= {0,0,0};
-    SDL_Surface *texte = NULL, *backg=NULL ; //declaration des variables globale
-    SDL_Rect positiontexte,positiond;
-    positiontexte.x=380;
-    positiontexte.y=280;
-    TTF_Font *police;//(pointeur contient parametre de la police)
-    SDL_Init(SDL_INIT_VIDEO); // Initialisation de la SDL
-    SDL_Surface *ecran =NULL;
-    police=TTF_OpenFont("font.ttf",200);
-    ecran=SDL_SetVideoMode(1920,1080, 32,SDL_ANYFORMAT); // Ouverture de la fenêtre
-    backg = IMG_Load("quiz.png");
-    positiond.x=0 ;
-    positiond.y=0 ;
-    SDL_BlitSurface(backg,NULL, ecran, &positiond);
-    SDL_Flip(ecran);
-    texte=TTF_RenderText_Blended(police,"ENIGMA",couleurnoir);
-    SDL_BlitSurface(texte,NULL,ecran,&positiontexte);
-    SDL_Flip(ecran);
-    SDL_Delay(2000);
+    
 
-    SDL_BlitSurface(backg,NULL, ecran, &positiond);
-    SDL_Flip(ecran);
-    quiz(ecran,d);
 
-    reponse(ecran,d);
-    SDL_FreeSurface(backg);
-    TTF_CloseFont(police);
-    TTF_Quit();
-    SDL_Quit(); // Arrêt de la SL
 
-    return EXIT_SUCCESS; // Fermeture du programme
+
+    return EXIT_SUCCESS;
 }
+
+
+
