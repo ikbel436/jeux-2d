@@ -1,97 +1,49 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <SDL/SDL.h>
-#include <SDL/SDL_image.h>
-#include <SDL/SDL_ttf.h>
-#include "IA.h"
-
-
-#define width 1360 
-#define height 760
-
-int main()
+/// @file main.c
+#include "menu.h"
+/**
+ * fonction boucle jeu
+ * @param ecran la surface de l'ecran pour mettre le jeu dessus
+ * @param son la chaine de son pour jouer des sons brefs avec
+ * @param musique la chaine de musique pour jouer la musique du jeu avec
+ */ 
+int main (void)
 {
-  SDL_Surface *screen=NULL ;
-  int running=1,collision,i,temp_prec,temp_actu,test ;
-  float D ;
-  SDL_TimerID timer ;
+    int continuee=1;
+    SDL_Surface *ecran =NULL;
+    Mix_Music *musique;
+    SDL_Init(SDL_INIT_VIDEO);
+    SDL_WM_SetIcon(IMG_Load("logo.png"), NULL); 
+    ecran = SDL_SetVideoMode(1366, 678,32, SDL_HWSURFACE | SDL_DOUBLEBUF);
+    SDL_WM_SetCaption("DIGILAND", "DIGILAND");
+    SDL_Event event;
 
-  Objet perso,zombie ;
+if (ecran==NULL)
+{
+printf("error: %s ",SDL_GetError());
+exit(EXIT_FAILURE);
+}
+if(Mix_OpenAudio(48000,MIX_DEFAULT_FORMAT,MIX_DEFAULT_CHANNELS,1024)==-1)
+  {printf("%s",Mix_GetError()); }
 
-   SDL_Init(SDL_INIT_VIDEO);
-
-    screen = SDL_SetVideoMode(width, height, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
-    
-    intialiser(&perso ,&zombie) ;
-    setup (screen,&perso,&zombie) ;
-    
-    SDL_EnableKeyRepeat(10, 10);
-
-    while(running){
-     deplacement_objet(&perso,&running) ;
-     calculer_centre_rayon (&perso,&zombie) ;
-     D=calculer_distance (&perso,&zombie) ;
-     collision=verif_collision (&perso,&zombie,D ) ;
-     if(collision)
-     {
-       
-
-         temp_prec=SDL_GetTicks();
-
-         if(temp_prec-temp_actu>1000)
-         {
-           
-         do{
-
-           temp_actu=SDL_GetTicks() ;
-           
-           if(perso.pos.x>zombie.pos.x)
-           zombie.pos.x+=1 ;
-           if(perso.pos.x<zombie.pos.x)
-           zombie.pos.x-=1 ;
-            deplacement_objet(&perso,&running) ;
-            SDL_FillRect(screen,NULL,SDL_MapRGB(screen->format,255,255,255)) ;
-            SDL_BlitSurface(perso.img,NULL,screen,&(perso.pos)) ;
-            SDL_BlitSurface(zombie.img,NULL,screen,&(zombie.pos)) ;
-            SDL_Flip(screen);
-        
-         }while(zombie.pos.x!=perso.pos.x && (temp_actu-temp_prec<2000)) ;
-          
-       deplacement_objet(&perso,&running) ;
-       SDL_FillRect(screen,NULL,SDL_MapRGB(screen->format,255,255,255)) ;
-       SDL_BlitSurface(perso.img,NULL,screen,&(perso.pos)) ;
-       SDL_BlitSurface(zombie.img,NULL,screen,&(zombie.pos)) ;
-       SDL_Flip(screen);
-         }
-       deplacement_objet(&perso,&running) ;
-       SDL_FillRect(screen,NULL,SDL_MapRGB(screen->format,255,255,255)) ;
-       SDL_BlitSurface(perso.img,NULL,screen,&(perso.pos)) ;
-       SDL_BlitSurface(zombie.img,NULL,screen,&(zombie.pos)) ;
-       SDL_Flip(screen);
-       
+	   musique=Mix_LoadMUS("music2.mp3");
+           Mix_PlayMusic(musique,-1);
+           SDL_Rect poslogo;
+poslogo.x=(1366/2)-262 ;
+poslogo.y=(678/2)-200 ;
+SDL_Surface *logo=IMG_Load("logo.png") ;
+SDL_BlitSurface(logo,NULL,ecran,&poslogo);
+SDL_Flip(ecran);
+SDL_Delay(500);
 
 
-     }
-     else
-     {
-       deplacement_objet(&perso,&running) ;
-       SDL_FillRect(screen,NULL,SDL_MapRGB(screen->format,255,255,255)) ;
-       SDL_BlitSurface(perso.img,NULL,screen,&(perso.pos)) ;
-       SDL_BlitSurface(zombie.img,NULL,screen,&(zombie.pos)) ;
-       SDL_Flip(screen);
-     }
-     
-
-
-    }
-    
-
-
-
-
-    return EXIT_SUCCESS;
+while (continuee)
+{
+menu(ecran,musique);
 }
 
-
-
+Mix_FreeMusic(musique);
+Mix_CloseAudio();
+SDL_FreeSurface(ecran);
+SDL_Quit();
+return EXIT_SUCCESS;
+}
